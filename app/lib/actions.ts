@@ -35,7 +35,7 @@ export async function createInvoice(formData: FormData) {
     redirect("/dashboard/invoices");
   } catch (err) {
     console.log(err);
-    return { error: err };
+    throw err; // 改为抛出，函数返回类型变为 void
   }
 }
 
