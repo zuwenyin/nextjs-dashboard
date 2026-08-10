@@ -16,22 +16,27 @@ const FormSchema = z.object({
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
-  const rawFormData = {
-    customerId: formData.get("customerId"),
-    amount: Number(formData.get("amount")),
-    status: formData.get("status"),
-  };
-  const { customerId, amount, status } = CreateInvoice.parse(rawFormData);
-  //   console.log(rawFormData);
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split("T")[0];
+  try {
+    const rawFormData = {
+      customerId: formData.get("customerId"),
+      amount: Number(formData.get("amount")),
+      status: formData.get("status"),
+    };
+    const { customerId, amount, status } = CreateInvoice.parse(rawFormData);
+    //   console.log(rawFormData);
+    const amountInCents = amount * 100;
+    const date = new Date().toISOString().split("T")[0];
 
-  await sql`
+    await sql`
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
   `;
-  revalidatePath("/dashboard/invoices");
-  redirect("/dashboard/invoices");
+    revalidatePath("/dashboard/invoices");
+    redirect("/dashboard/invoices");
+  } catch (err) {
+    console.log(err);
+    return { error: err };
+  }
 }
 
 export async function updateInvoice(id: string, formData: FormData) {
@@ -55,6 +60,8 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
+  throw new Error('Failed to Delete Invoice');
+
   await sql`
     DELETE FROM invoices
     WHERE id = ${id}
